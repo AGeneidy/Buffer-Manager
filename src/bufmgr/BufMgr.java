@@ -4,6 +4,11 @@ import java.io.*;
 import diskmgr.*;
 import global.*;
 public class BufMgr {
+	// kol row hwa page
+	// 3dd el rows numbufs
+	static byte [][] arr;//numbufs // page size
+	static Page [] arrOfpage;
+	
 	/**
 	 * Create the BufMgr object Allocate pages (frames) for the buffer pool in
 	 * main memory and make the buffer manager aware that the replacement policy
