@@ -175,7 +175,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 	  pid.pid = pid.pid + 1 ) {
       
       try {
-	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true);
+	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true,false);
       }
       catch (Exception e) { 
 	status = FAIL;
@@ -221,7 +221,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 	 pid.pid = pid.pid + 1) {
       
       try {
-	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ false);
+	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ false,false);
       }
       catch (Exception e) { 
 	status = FAIL;
@@ -325,7 +325,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 	  pid.pid = pid.pid + 1 ) {
       
       try {
-        SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true);
+        SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true,false);
       }
       catch (Exception e) { 
 	status = FAIL;
@@ -346,7 +346,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     // Now pin that last page, and make sure it fails.
     if ( status == OK ) {
       try {
-	SystemDefs.JavabaseBM.pinPage( lastPid, pg, /*emptyPage:*/ true);
+	SystemDefs.JavabaseBM.pinPage( lastPid, pg, /*emptyPage:*/ true,false);
       }
       catch (ChainException e) { 
 	status = checkException (e, "bufmgr.BufferPoolExceededException");
@@ -368,7 +368,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     
     if ( status == OK ) {
       try {
-	SystemDefs.JavabaseBM.pinPage( firstPid, pg, /*emptyPage:*/ true);
+	SystemDefs.JavabaseBM.pinPage( firstPid, pg, /*emptyPage:*/ true,false);
       }
       catch (Exception e) {
 	status = FAIL;
@@ -533,7 +533,7 @@ class BMDriver extends TestDriver implements GlobalConst {
       for ( index=0; status == OK && index < numPages; ++index ) {
 	pid = pids[index];
 	try {
-	  SystemDefs.JavabaseBM.pinPage( pid, pg, false);
+	  SystemDefs.JavabaseBM.pinPage( pid, pg, false,false);
 	}
 	catch (Exception e) { 
 	  status = FAIL;

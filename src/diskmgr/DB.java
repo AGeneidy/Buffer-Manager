@@ -815,7 +815,7 @@ public class DB implements GlobalConst {
     throws DiskMgrException {
 
     try {
-      SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage,false);
     }
     catch (Exception e) {
       throw new DiskMgrException(e,"DB.java: pinPage() failed");
@@ -831,7 +831,7 @@ public class DB implements GlobalConst {
     throws DiskMgrException {
 
     try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, dirty); 
+      SystemDefs.JavabaseBM.unpinPage(pageno, dirty,false); 
     }
     catch (Exception e) {
       throw new DiskMgrException(e,"DB.java: unpinPage() failed");
