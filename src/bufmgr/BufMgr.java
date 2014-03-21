@@ -93,7 +93,6 @@ public class BufMgr {
 			for (; i < howmany - 1; i++) {
 				SystemDefs.JavabaseDB.allocate_page(b[i]);
 			}
-			b[0].writeToByteArray(firstPage.getpage(), 0);
 			pinPage(b[0], firstPage, false, false);
 			return b[0];
 		} catch (OutOfSpaceException | InvalidRunSizeException
