@@ -3,6 +3,8 @@ package bufmgr;
 import java.io.*;
 import java.security.AllPermission;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import diskmgr.*;
 import global.*;
@@ -13,6 +15,8 @@ public class BufMgr {
 	static pageDsc[] bufDescr;// numbufs // page size
 	static byte[][] bufPool;
 	static Hashtable<PageId, Integer> google;
+	static Queue<pageDsc> FIFO;
+	static int num, MAX;
 
 	/**
 	 * Create the BufMgr object Allocate pages (frames) for the buffer pool in
@@ -28,6 +32,9 @@ public class BufMgr {
 		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
 		bufDescr = new pageDsc[numBufs];
 		google = new Hashtable<PageId, Integer>();
+		FIFO = new LinkedList<pageDsc>();
+		MAX = numBufs;
+		num = 0;
 	}
 
 	/**
@@ -49,8 +56,38 @@ public class BufMgr {
 	 *            true (empty page), false (nonempty page).
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) {
-		if (google.contains(pgid)) {
-
+		if (!google.contains(pgid)) {
+			int rowIndex = 0;
+			if (num >= MAX) {
+				if (FIFO.isEmpty()) {
+					// System.out.println("EMPTY FIFO");
+					return;
+				}
+				PageId pageIdToBeRemoved = FIFO.poll().pagenumber;
+				rowIndex = google.get(pageIdToBeRemoved);
+				if (bufDescr[rowIndex].dirtybit)
+					flushPage(pageIdToBeRemoved);
+				google.remove(pageIdToBeRemoved);
+			} else {
+				rowIndex = num;
+				num++;
+			}
+			try {
+				SystemDefs.JavabaseDB.read_page(pgid, page);
+				bufPool[rowIndex] = page.getpage();
+				google.put(pgid, rowIndex);
+				bufDescr[rowIndex].update(pgid, 1, false, loved);
+				// FIFO.add(bufDescr[rowIndex]);
+			} catch (InvalidPageNumberException | FileIOException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			int reqPgRow = google.get(pgid);
+			page = new Page(bufPool[reqPgRow]);
+			bufDescr[reqPgRow].increment();
+			if (FIFO.contains(bufDescr[reqPgRow]))
+				FIFO.remove(bufDescr[reqPgRow]);
 		}
 	}
 
@@ -68,6 +105,7 @@ public class BufMgr {
 	 *            the dirty bit of the frame.
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved) {
+
 	}
 
 	/**
@@ -90,7 +128,7 @@ public class BufMgr {
 			b[i] = new PageId();
 		int i = 0;
 		try {
-			for (; i < howmany - 1; i++) {
+			for (; i < howmany; i++) {
 				SystemDefs.JavabaseDB.allocate_page(b[i]);
 			}
 			pinPage(b[0], firstPage, false, false);
@@ -121,6 +159,13 @@ public class BufMgr {
 	 *            the page number in the database.
 	 */
 	public void freePage(PageId pgid) {
+		try {
+			SystemDefs.JavabaseDB.deallocate_page(pgid);
+		} catch (InvalidRunSizeException | InvalidPageNumberException
+				| FileIOException | DiskMgrException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -131,10 +176,18 @@ public class BufMgr {
 	 *            the page number in the database.
 	 */
 	public void flushPage(PageId pgid) {
+		try {
+			SystemDefs.JavabaseDB.write_page(pgid,
+					new Page(bufPool[google.get(pgid)]));
+		} catch (InvalidPageNumberException | FileIOException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public int getNumUnpinnedBuffers() {
 		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 }
