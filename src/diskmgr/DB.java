@@ -138,7 +138,6 @@ public class DB implements GlobalConst {
     throws InvalidPageNumberException, 
 	   FileIOException, 
 	   IOException {
-
     if((pageno.pid < 0)||(pageno.pid >= num_pages))
       throw new InvalidPageNumberException(null, "BAD_PAGE_NUMBER");
     

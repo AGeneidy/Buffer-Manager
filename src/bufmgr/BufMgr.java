@@ -1,14 +1,19 @@
 package bufmgr;
 
 import java.io.*;
+import java.security.AllPermission;
+import java.util.Hashtable;
+
 import diskmgr.*;
 import global.*;
+
 public class BufMgr {
 	// kol row hwa page
 	// 3dd el rows numbufs
-	static byte [][] arr;//numbufs // page size
-	static Page [] arrOfpage;
-	
+	static pageDsc[] bufDescr;// numbufs // page size
+	static byte[][] bufPool;
+	static Hashtable<PageId, Integer> google;
+
 	/**
 	 * Create the BufMgr object Allocate pages (frames) for the buffer pool in
 	 * main memory and make the buffer manager aware that the replacement policy
@@ -20,6 +25,9 @@ public class BufMgr {
 	 *            name of the buffer replacement policy
 	 */
 	public BufMgr(int numBufs, String replaceArg) {
+		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
+		bufDescr = new pageDsc[numBufs];
+		google = new Hashtable<PageId, Integer>();
 	}
 
 	/**
@@ -41,6 +49,9 @@ public class BufMgr {
 	 *            true (empty page), false (nonempty page).
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) {
+		if (google.contains(pgid)) {
+
+		}
 	}
 
 	/**
@@ -74,7 +85,33 @@ public class BufMgr {
 	 * @return the first page id of the new pages. null, if error.
 	 */
 	public PageId newPage(Page firstPage, int howmany) {
-		return null;
+		PageId[] b = new PageId[howmany];
+		for (int i = 0; i < howmany; i++)
+			b[i] = new PageId();
+		int i = 0;
+		try {
+			for (; i < howmany - 1; i++) {
+				SystemDefs.JavabaseDB.allocate_page(b[i]);
+			}
+			b[0].writeToByteArray(firstPage.getpage(), 0);
+			pinPage(b[0], firstPage, false, false);
+			return b[0];
+		} catch (OutOfSpaceException | InvalidRunSizeException
+				| InvalidPageNumberException | FileIOException
+				| DiskMgrException | IOException e) {
+			// TODO Auto-generated catch block
+			for (int j = 0; j < i; j++)
+				try {
+					SystemDefs.JavabaseDB.deallocate_page(b[j]);
+				} catch (InvalidRunSizeException | InvalidPageNumberException
+						| FileIOException | DiskMgrException | IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			e.printStackTrace();
+			return null;
+		}
+
 	}
 
 	/**
