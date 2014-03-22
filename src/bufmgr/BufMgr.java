@@ -16,7 +16,8 @@ public class BufMgr {
 	// 3dd el rows numbufs
 	static pageDsc[] bufDescr;// numbufs // page size
 	static byte[][] bufPool;
-	static Hashtable<PageId, Integer> google;
+	static Page[] pages;
+	static Hashtable<Integer, Integer> google;
 	static int num, MAX;
 	static Policy rep;
 
@@ -35,9 +36,12 @@ public class BufMgr {
 		bufDescr = new pageDsc[numBufs];
 		for (int i = 0; i < numBufs; i++)
 			bufDescr[i] = new pageDsc();
-		google = new Hashtable<PageId, Integer>();
+		google = new Hashtable<Integer, Integer>();
 		rep = Policy.getInstance(replaceArg);
 		MAX = numBufs;
+		pages = new Page[numBufs];
+		for (int i = 0; i < numBufs; i++)
+			pages[i] = new Page(bufPool[i]);
 		num = 0;
 	}
 
@@ -60,9 +64,9 @@ public class BufMgr {
 	 *            true (empty page), false (nonempty page).
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) {
-		if (!google.contains(pgid)) { // not in RAM
+		if (!google.contains(pgid.pid)) { // not in RAM
+		// System.out.println("a77a");
 			int rowIndex = 0;
-
 			if (num >= MAX) { // RAM is Full
 
 				if (rep.isEmpty()) { // Policy can not be accessed
@@ -71,13 +75,13 @@ public class BufMgr {
 				}
 
 				PageId pageIdToBeRemoved = rep.getFrame().pageID;
-				rowIndex = google.get(pageIdToBeRemoved);
+				rowIndex = google.get(pageIdToBeRemoved.pid);
 				if (bufDescr[rowIndex].dirtybit)
 					flushPage(pageIdToBeRemoved); // save in Disk
-				
+
 				rep.removeFromAdded(bufDescr[rowIndex]);
 				rep.removeFromRequested(bufDescr[rowIndex]);
-				google.remove(pageIdToBeRemoved); // remove from RAM
+				google.remove(pageIdToBeRemoved.pid); // remove from RAM
 
 			} else { // RAM has empty place
 				rowIndex = num;
@@ -85,14 +89,17 @@ public class BufMgr {
 			}
 
 			try {
-				SystemDefs.JavabaseDB.read_page(pgid, page); // Read from Disk
-				bufPool[rowIndex] = page.getpage(); // Put the page in the
-													// selected place
-				google.put(pgid, rowIndex);
+				Page tmp = new Page();
+				SystemDefs.JavabaseDB.read_page(pgid, tmp); // Read from Disk
+				pages[rowIndex]= tmp;
+				bufPool[rowIndex] = tmp.getpage(); // Put the page in the
+				 page.setpage(tmp.getpage()); // selected place
+				google.put(pgid.pid, rowIndex);
 				bufDescr[rowIndex].update(pgid, 1, false, loved);
 
 				rep.addToAdded(bufDescr[rowIndex]); // add in queue FIFO ONLY
-				rep.addToRequested(bufDescr[rowIndex]); // add in queue FIFO ONLY
+				rep.addToRequested(bufDescr[rowIndex]); // add in queue FIFO
+														// ONLY
 
 			} catch (InvalidPageNumberException | FileIOException | IOException e) {
 				// TODO Auto-generated catch block
@@ -100,12 +107,14 @@ public class BufMgr {
 			}
 
 		} else { // in RAM
-			int reqPgRow = google.get(pgid);
-			page = new Page(bufPool[reqPgRow]);
+			int reqPgRow = google.get(pgid.pid);
+			page.setpage(bufPool[reqPgRow]);
 			bufDescr[reqPgRow].increment();
 			rep.addToRequested(bufDescr[reqPgRow]);
 
 		}
+		System.out.println(pgid + "   " + google.get(pgid.pid) + "    "
+				+ bufPool[google.get(pgid.pid)].toString());
 	}
 
 	/**
@@ -121,7 +130,7 @@ public class BufMgr {
 	 * @param dirty
 	 *            the dirty bit of the frame.
 	 * @throws PageUnpinnedExcpetion
-	 * @throws InvalidPageNumberException 
+	 * @throws InvalidPageNumberException
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
 			throws PageUnpinnedExcpetion {
@@ -130,16 +139,14 @@ public class BufMgr {
 			if (bufDescr[rowPlace].getPin_count() == 0)// throws exception
 				throw new PageUnpinnedExcpetion();
 
-			bufDescr[rowPlace]
-					.setPin_count(bufDescr[rowPlace].getPin_count() - 1);
+			bufDescr[rowPlace].decrement();
 			bufDescr[rowPlace].dirtybit = dirty;
 			bufDescr[rowPlace].lovebit = loved;
-
 			// FIFO >> no action
 			// LRU >> add if count == 0
 
 		} else {
-			throw new PageUnpinnedExcpetion();
+			// throw new PageUnpinnedExcpetion();
 		}
 	}
 
