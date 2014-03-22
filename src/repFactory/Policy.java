@@ -1,10 +1,16 @@
 package repFactory;
 
+import global.PageId;
+
+import java.util.LinkedList;
+
 import bufmgr.pageDsc;
 
 public class Policy {
 	static Policy instance;
 	static String policy;
+	protected LinkedList<pageDsc> requested;
+	protected LinkedList<pageDsc> added;
 
 	protected Policy() {
 		// TODO Auto-generated constructor stub
@@ -31,21 +37,39 @@ public class Policy {
 		}
 	}
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public pageDsc poll() {
-		// TODO Auto-generated method stub
+	public pageDsc getFrame() {
 		return null;
 	}
 
-	public void check(pageDsc pageDsc) {
-		// TODO Auto-generated method stub	
+	public void update(pageDsc pageDsc) {
 	}
-
-	public void add(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
+	
+	public void addToAdded(pageDsc pageDsc) {
+		if(!added.contains(pageDsc)){
+			added.addLast(pageDsc);
+		}else{
+			added.remove(pageDsc);
+			added.addLast(pageDsc);
+		}
 	}
-
+	
+	public void addToRequested(pageDsc pageDsc) {
+		if(!requested.contains(pageDsc)){
+			requested.addLast(pageDsc);
+		}else{
+			requested.remove(pageDsc);
+			requested.addLast(pageDsc);
+		}
+	}
+	
+	public void removeFromAdded(pageDsc pageDsc) {
+		added.remove(pageDsc);
+	}
+	
+	public void removeFromRequested(pageDsc pageDsc) {
+		requested.remove(pageDsc);
+	}
 }

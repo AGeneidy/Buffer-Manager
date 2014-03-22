@@ -4,6 +4,30 @@ import global.*;
 
 public class pageDsc {
 	protected PageId pageID;
+	public PageId getPageID() {
+		return pageID;
+	}
+
+	public void setPageID(PageId pageID) {
+		this.pageID = pageID;
+	}
+
+	public boolean isDirtybit() {
+		return dirtybit;
+	}
+
+	public void setDirtybit(boolean dirtybit) {
+		this.dirtybit = dirtybit;
+	}
+
+	public boolean isLovebit() {
+		return lovebit;
+	}
+
+	public void setLovebit(boolean lovebit) {
+		this.lovebit = lovebit;
+	}
+
 	private int pin_count;
 	protected boolean dirtybit;
 	protected boolean lovebit;

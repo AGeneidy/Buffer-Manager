@@ -15,23 +15,24 @@ public class LRU extends Policy {
 
 	@Override
 	public boolean isEmpty() {
-		return LRU.isEmpty();
-	}
-	
-	@Override
-	public pageDsc poll() {
-		return LRU.poll();
-	}
-	
-	@Override
-	public void check(pageDsc pageDsc) {
-		if(LRU.contains(pageDsc)){ //pin
-			if(pageDsc.getPin_count() > 0)
-				LRU.remove(pageDsc);
-		}else{ //unpin
-			if(pageDsc.getPin_count() == 0)
-				LRU.add(pageDsc);
+		for(int i = 0; i<requested.size(); i++){
+			if(requested.get(i).getPin_count() == 0 )
+				return false;
 		}
+		return true;
+	}
+	
+	@Override
+	public pageDsc getFrame() {
+		for(int i = 0; i<requested.size(); i++){
+			if(requested.get(i).getPin_count() == 0 )
+				return requested.get(i);
+		}
+		return null;
+	}
+
+	@Override
+	public void update(pageDsc pageDsc) {
 	}
 
 

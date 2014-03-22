@@ -70,10 +70,13 @@ public class BufMgr {
 					return;
 				}
 
-				PageId pageIdToBeRemoved = rep.poll().pageID;
+				PageId pageIdToBeRemoved = rep.getFrame().pageID;
 				rowIndex = google.get(pageIdToBeRemoved);
 				if (bufDescr[rowIndex].dirtybit)
 					flushPage(pageIdToBeRemoved); // save in Disk
+				
+				rep.removeFromAdded(bufDescr[rowIndex]);
+				rep.removeFromRequested(bufDescr[rowIndex]);
 				google.remove(pageIdToBeRemoved); // remove from RAM
 
 			} else { // RAM has empty place
@@ -88,7 +91,8 @@ public class BufMgr {
 				google.put(pgid, rowIndex);
 				bufDescr[rowIndex].update(pgid, 1, false, loved);
 
-				rep.add(bufDescr[rowIndex]); // add in queue FIFO ONLY
+				rep.addToAdded(bufDescr[rowIndex]); // add in queue FIFO ONLY
+				rep.addToRequested(bufDescr[rowIndex]); // add in queue FIFO ONLY
 
 			} catch (InvalidPageNumberException | FileIOException | IOException e) {
 				// TODO Auto-generated catch block
@@ -99,9 +103,8 @@ public class BufMgr {
 			int reqPgRow = google.get(pgid);
 			page = new Page(bufPool[reqPgRow]);
 			bufDescr[reqPgRow].increment();
-			rep.check(bufDescr[reqPgRow]);
-			// FIFO >> no action
-			// LRU >> Remove from Queue
+			rep.addToRequested(bufDescr[reqPgRow]);
+
 		}
 	}
 
@@ -131,7 +134,6 @@ public class BufMgr {
 			bufDescr[rowPlace].dirtybit = dirty;
 			bufDescr[rowPlace].lovebit = loved;
 
-			rep.check(bufDescr[rowPlace]);
 			// FIFO >> no action
 			// LRU >> add if count == 0
 

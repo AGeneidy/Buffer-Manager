@@ -6,29 +6,31 @@ import java.util.Queue;
 import bufmgr.pageDsc;
 
 public class FIFO extends Policy {
-	static Queue<pageDsc> FIFO;
 
 	protected FIFO() {
-		// TODO Auto-generated constructor stub
-		FIFO = new LinkedList<pageDsc>();
+		requested = new LinkedList<pageDsc>();
+		added = new LinkedList<pageDsc>();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return FIFO.isEmpty();
+		for(int i = 0; i<added.size(); i++){
+			if(added.get(i).getPin_count() == 0 )
+				return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public pageDsc getFrame() {
+		for(int i = 0; i<added.size(); i++){
+			if(added.get(i).getPin_count() == 0 )
+				return added.get(i);
+		}
+		return null;
 	}
 
 	@Override
-	public pageDsc poll() {
-		return FIFO.poll();
-	}
-
-	@Override
-	public void check(pageDsc pageDsc) {
-	}
-
-	@Override
-	public void add(pageDsc pageDsc) {
-		FIFO.add(pageDsc);
+	public void update(pageDsc pageDsc) {
 	}
 }
