@@ -6,7 +6,9 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import repFactory.Policy;
 import diskmgr.*;
+import repFactory.*;
 import global.*;
 
 public class BufMgr {
@@ -15,8 +17,8 @@ public class BufMgr {
 	static pageDsc[] bufDescr;// numbufs // page size
 	static byte[][] bufPool;
 	static Hashtable<PageId, Integer> google;
-	static Queue<pageDsc> FIFO;
 	static int num, MAX;
+	static Policy rep;
 
 	/**
 	 * Create the BufMgr object Allocate pages (frames) for the buffer pool in
@@ -32,7 +34,7 @@ public class BufMgr {
 		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
 		bufDescr = new pageDsc[numBufs];
 		google = new Hashtable<PageId, Integer>();
-		FIFO = new LinkedList<pageDsc>();
+		rep = Policy.getInstance(replaceArg);
 		MAX = numBufs;
 		num = 0;
 	}
@@ -59,11 +61,11 @@ public class BufMgr {
 		if (!google.contains(pgid)) {
 			int rowIndex = 0;
 			if (num >= MAX) {
-				if (FIFO.isEmpty()) {
+				if (rep.isEmpty()) {
 					// System.out.println("EMPTY FIFO");
 					return;
 				}
-				PageId pageIdToBeRemoved = FIFO.poll().pagenumber;
+				PageId pageIdToBeRemoved = rep.poll().pageID;
 				rowIndex = google.get(pageIdToBeRemoved);
 				if (bufDescr[rowIndex].dirtybit)
 					flushPage(pageIdToBeRemoved);
@@ -86,8 +88,8 @@ public class BufMgr {
 			int reqPgRow = google.get(pgid);
 			page = new Page(bufPool[reqPgRow]);
 			bufDescr[reqPgRow].increment();
-			if (FIFO.contains(bufDescr[reqPgRow]))
-				FIFO.remove(bufDescr[reqPgRow]);
+			if (rep.contains(bufDescr[reqPgRow]))
+				rep.remove(bufDescr[reqPgRow]);
 		}
 	}
 
@@ -103,9 +105,23 @@ public class BufMgr {
 	 *            page number in the minibase
 	 * @param dirty
 	 *            the dirty bit of the frame.
+	 * @throws PageUnpinnedExcpetion
 	 */
-	public void unpinPage(PageId pgid, boolean dirty, boolean loved) {
+	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
+			throws PageUnpinnedExcpetion {
+		if (google.contains(pgid)) {
+			int rowPlace = google.get(pgid);
+			if (bufDescr[rowPlace].pin_count == 0)// throws exception
+				throw new PageUnpinnedExcpetion();
 
+			--bufDescr[rowPlace].pin_count;
+			bufDescr[rowPlace].dirtybit = dirty;
+			bufDescr[rowPlace].lovebit = loved;
+			rep.check(bufDescr[rowPlace]);
+
+		}else{
+			throw new PageUnpinnedExcpetion();
+		}
 	}
 
 	/**
@@ -187,7 +203,9 @@ public class BufMgr {
 
 	public int getNumUnpinnedBuffers() {
 		// TODO Auto-generated method stub
-		
-		return 0;
+		int i = 0 ;
+		for(int u  =0 ; u < MAX ; u++)if(bufDescr[u].pin_count==0)i++;
+		i+=rep.count();
+		return i;
 	}
 }
