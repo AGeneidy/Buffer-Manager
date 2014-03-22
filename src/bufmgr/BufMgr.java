@@ -121,6 +121,7 @@ public class BufMgr {
 	 * @param dirty
 	 *            the dirty bit of the frame.
 	 * @throws PageUnpinnedExcpetion
+	 * @throws InvalidPageNumberException 
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
 			throws PageUnpinnedExcpetion {

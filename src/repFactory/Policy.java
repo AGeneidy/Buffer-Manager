@@ -32,7 +32,7 @@ public class Policy {
 			case "love/hate":
 				return (instance = new LOVE());
 			default:
-				return null;
+				return (instance = new FIFO());
 			}
 		}
 	}
