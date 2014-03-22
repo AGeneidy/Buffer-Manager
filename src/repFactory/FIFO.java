@@ -13,25 +13,22 @@ public class FIFO extends Policy {
 		FIFO = new LinkedList<pageDsc>();
 	}
 
+	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
 		return FIFO.isEmpty();
 	}
 
+	@Override
 	public pageDsc poll() {
-		// TODO Auto-generated method stub
 		return FIFO.poll();
 	}
 
-	public boolean contains(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
-		return FIFO.contains(pageDsc);
+	@Override
+	public void check(pageDsc pageDsc) {
 	}
 
-	public void remove(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
-		FIFO.remove(pageDsc);
-
+	@Override
+	public void add(pageDsc pageDsc) {
+		FIFO.add(pageDsc);
 	}
-
 }

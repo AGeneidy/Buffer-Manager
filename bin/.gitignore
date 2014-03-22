@@ -1,6 +1,2 @@
-/bufmgr
-/factory
-/policy
 /repFactory
-/diskmgr
-/tests
+/bufmgr

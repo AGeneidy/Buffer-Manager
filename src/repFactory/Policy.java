@@ -40,24 +40,12 @@ public class Policy {
 		return null;
 	}
 
-	public boolean contains(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void remove(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void check(pageDsc pageDsc) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
 
-	public int count() {
+	public void add(pageDsc pageDsc) {
 		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }
