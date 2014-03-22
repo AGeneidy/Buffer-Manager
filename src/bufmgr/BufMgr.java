@@ -111,6 +111,7 @@ public class BufMgr {
 			page.setpage(bufPool[reqPgRow]);
 			bufDescr[reqPgRow].increment();
 			rep.addToRequested(bufDescr[reqPgRow]);
+			rep.removeFromCountZero(bufDescr[reqPgRow]);
 
 		}
 		System.out.println(pgid + "   " + google.get(pgid.pid) + "    "
