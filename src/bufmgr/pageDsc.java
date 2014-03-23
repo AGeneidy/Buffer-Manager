@@ -59,7 +59,7 @@ public class pageDsc {
 	
 	public pageDsc(int frameIndex) {
 		this.frameIndex = frameIndex;
-		pageID = new PageId();
+		pageID = new PageId(-1);
 		setPin_count(0);
 		dirtybit = false;
 		lovebit = false;

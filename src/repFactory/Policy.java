@@ -9,14 +9,18 @@ import bufmgr.pageDsc;
 public class Policy {
 	static Policy instance;
 	static String policy;
+	protected static int MAX;
 	protected LinkedList<pageDsc> requested;
 	protected LinkedList<pageDsc> countZero;
 
 	protected Policy() {
 		// TODO Auto-generated constructor stub
+		countZero = new LinkedList<pageDsc>();
+		requested = new LinkedList<pageDsc>();
+		MAX = -1;
 	}
 
-	public static Policy getInstance(String u) {
+	public static Policy getInstance(String u, int max) {
 		if (instance != null) {
 			if (!policy.equals(u))// moshkela
 				return null;
@@ -28,7 +32,7 @@ public class Policy {
 			case "LRU":
 				return (instance = new LRU());
 			case "MRU":
-				return (instance = new MRU());
+				return (instance = new MRU(max));
 			case "love/hate":
 				return (instance = new LOVE());
 			default:
@@ -64,6 +68,11 @@ public class Policy {
 	
 	public void removeFromCountZero(pageDsc pageDsc) {
 		countZero.remove(pageDsc);
+	}
+
+	public int size() {
+		// TODO Auto-generated method stub
+		return requested.size();
 	}
 	
 //	public void removeFromRequested(pageDsc pageDsc) {

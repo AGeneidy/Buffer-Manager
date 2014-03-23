@@ -8,9 +8,7 @@ public class LRU extends Policy {
 
 	protected LRU() {
 		// TODO Auto-generated constructor stub
-		countZero = new LinkedList<pageDsc>();
-
-		requested = new LinkedList<pageDsc>();	
+		super();
 	}
 
 	@Override

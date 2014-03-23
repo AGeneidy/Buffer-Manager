@@ -33,7 +33,7 @@ public class BufMgr {
 		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
 		bufDescr = new pageDsc[numBufs];
 		google = new Hashtable<Integer, Integer>();
-		rep = Policy.getInstance(replaceArg);
+		rep = Policy.getInstance(replaceArg,numBufs);
 		MAX = numBufs;
 		pages = new Page[numBufs];
 		for (int i = 0; i < numBufs; i++){
@@ -67,7 +67,7 @@ public class BufMgr {
 		System.out.println("Pin "+ pgid.pid);
 		if (!google.containsKey(pgid.pid)) { // not in RAM
 			int rowIndex = 0;
-
+//			System.out.println(rep.size());
 			if (rep.isEmpty()) { // Policy can not be accessed
 				throw new BufferPoolExceededException(null, "");
 			}

@@ -38,7 +38,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     System.out.print ("\n" + "Running " + testName() + " tests...." + "\n");
     
     try {
-      SystemDefs sysdef = new SystemDefs( dbpath, NUMBUF+20, NUMBUF, "LRU" );
+      SystemDefs sysdef = new SystemDefs( dbpath, NUMBUF+20, NUMBUF, "MRU" );
     }
     
     catch (Exception e) {
@@ -466,128 +466,128 @@ class BMDriver extends TestDriver implements GlobalConst {
    *
    * @return whether test3 has passed
    */
-//  protected boolean test3 () {
-//    
-//    System.out.print("\n  Test 3 exercises some of the internals " +
-//		     "of the buffer manager\n");
-//    
-//    int index; 
-//    int numPages = NUMBUF + 10;
-//    Page pg = new Page();
-//    PageId pid = new PageId(); 
-//    PageId [] pids = new PageId[numPages];
-//    boolean status = OK;
-//
-//    System.out.print("  - Allocate and dirty some new pages, one at " +
-//                       "a time, and leave some pinned\n");
-//
-//    for ( index=0; status == OK && index < numPages; ++index ) {
-//      try {
-//        pid = SystemDefs.JavabaseBM.newPage( pg, 1 );
-//      }
-//      catch (Exception e) {   
-//	status = FAIL;
-//	System.err.print ("*** Could not allocate new page number " 
-//			  + index+1 + "\n");
-//        e.printStackTrace();
-//      }
-//      
-//      if ( status == OK )
-//	pids[index] = pid;
-//      
-//      if ( status == OK ) {
-//	
-//	// Copy the page number + 99999 onto each page.  It seems
-//	// unlikely that this bit pattern would show up there by
-//	// coincidence.
-//	int data = pid.pid + 99999;
-//	
-//	try {
-//	  Convert.setIntValue (data, 0, pg.getpage());
-//	}
-//	catch (IOException e) {
-//	  System.err.print ("*** Convert value failed\n");
-//	  status = FAIL;
-//	  e.printStackTrace();
-//	}
-//	
-//	// Leave the page pinned if it equals 12 mod 20.  This is a
-//	// random number based loosely on a bug report.
-//	if (status == OK) {
-//	  if ( pid.pid % 20 != 12 ) {
-//	    try {
-//	      SystemDefs.JavabaseBM.unpinPage( pid, /*dirty:*/ true, false );
-//	    }
-//	    catch (Exception e) { 
-//	      status = FAIL;
-//	      System.err.print("*** Could not unpin dirty page "+pid.pid+"\n");
-//	    }
-//	  }
-//	}
-//      }
-//    }
-//
-//    if ( status == OK ) {
-//      System.out.print ("  - Read the pages\n");
-//
-//      for ( index=0; status == OK && index < numPages; ++index ) {
-//	pid = pids[index];
-//	try {
-//	  SystemDefs.JavabaseBM.pinPage( pid, pg, false,false);
-//	}
-//	catch (Exception e) { 
-//	  status = FAIL;
-//	  System.err.print("*** Could not pin page " + pid.pid + "\n");
-//          e.printStackTrace();
-//	}
-//	
-//	if ( status == OK ) {
-//	  
-//	  int data = 0;
-//	  
-//	  try {
-//	    data = Convert.getIntValue (0, pg.getpage());
-//	  }
-//	  catch (IOException e) {
-//	    System.err.print ("*** Convert value failed \n");
-//	    status = FAIL;
-//	  }
-//	  
-//	  if ( data != pid.pid + 99999 ) {
-//	    status = FAIL;
-//	    System.err.print("*** Read wrong data back from page "+pid.pid+"\n");
-//	  }
-//	}
-//	
-//	if ( status == OK ) {
-//	  try {
-//	    SystemDefs.JavabaseBM.unpinPage( pid, true , false); //might not be dirty
-//	  }          
-//	  catch (Exception e)  { 
-//	    status = FAIL;
-//	    System.err.print("*** Could not unpin page "+pid.pid+"\n");
-//	    e.printStackTrace();
-//	  }
-//	}
-//	
-//	if ( status == OK && (pid.pid % 20 == 12) ) {
-//	  try {
-//	    SystemDefs.JavabaseBM.unpinPage( pid, /*dirty:*/ true , false);
-//	  }
-//	  catch (Exception e)  { 
-//	    status = FAIL;
-//	    System.err.print("*** Could not unpin page "+pid.pid+"\n");
-//	    e.printStackTrace();
-//	  }
-//	}
-//      }
-//    }
-//    
-//    if ( status == OK )
-//      System.out.print("  Test 3 completed successfully.\n");
-//
-//    return status;
-//}
+  protected boolean test3 () {
+    
+    System.out.print("\n  Test 3 exercises some of the internals " +
+		     "of the buffer manager\n");
+    
+    int index; 
+    int numPages = NUMBUF + 10;
+    Page pg = new Page();
+    PageId pid = new PageId(); 
+    PageId [] pids = new PageId[numPages];
+    boolean status = OK;
+
+    System.out.print("  - Allocate and dirty some new pages, one at " +
+                       "a time, and leave some pinned\n");
+
+    for ( index=0; status == OK && index < numPages; ++index ) {
+      try {
+        pid = SystemDefs.JavabaseBM.newPage( pg, 1 );
+      }
+      catch (Exception e) {   
+	status = FAIL;
+	System.err.print ("*** Could not allocate new page number " 
+			  + index+1 + "\n");
+        e.printStackTrace();
+      }
+      
+      if ( status == OK )
+	pids[index] = pid;
+      
+      if ( status == OK ) {
+	
+	// Copy the page number + 99999 onto each page.  It seems
+	// unlikely that this bit pattern would show up there by
+	// coincidence.
+	int data = pid.pid + 99999;
+	
+	try {
+	  Convert.setIntValue (data, 0, pg.getpage());
+	}
+	catch (IOException e) {
+	  System.err.print ("*** Convert value failed\n");
+	  status = FAIL;
+	  e.printStackTrace();
+	}
+	
+	// Leave the page pinned if it equals 12 mod 20.  This is a
+	// random number based loosely on a bug report.
+	if (status == OK) {
+	  if ( pid.pid % 20 != 12 ) {
+	    try {
+	      SystemDefs.JavabaseBM.unpinPage( pid, /*dirty:*/ true, false );
+	    }
+	    catch (Exception e) { 
+	      status = FAIL;
+	      System.err.print("*** Could not unpin dirty page "+pid.pid+"\n");
+	    }
+	  }
+	}
+      }
+    }
+
+    if ( status == OK ) {
+      System.out.print ("  - Read the pages\n");
+
+      for ( index=0; status == OK && index < numPages; ++index ) {
+	pid = pids[index];
+	try {
+	  SystemDefs.JavabaseBM.pinPage( pid, pg, false,false);
+	}
+	catch (Exception e) { 
+	  status = FAIL;
+	  System.err.print("*** Could not pin page " + pid.pid + "\n");
+          e.printStackTrace();
+	}
+	
+	if ( status == OK ) {
+	  
+	  int data = 0;
+	  
+	  try {
+	    data = Convert.getIntValue (0, pg.getpage());
+	  }
+	  catch (IOException e) {
+	    System.err.print ("*** Convert value failed \n");
+	    status = FAIL;
+	  }
+	  
+	  if ( data != pid.pid + 99999 ) {
+	    status = FAIL;
+	    System.err.print("*** Read wrong data back from page "+pid.pid+"\n");
+	  }
+	}
+	
+	if ( status == OK ) {
+	  try {
+	    SystemDefs.JavabaseBM.unpinPage( pid, true , false); //might not be dirty
+	  }          
+	  catch (Exception e)  { 
+	    status = FAIL;
+	    System.err.print("*** Could not unpin page "+pid.pid+"\n");
+	    e.printStackTrace();
+	  }
+	}
+	
+	if ( status == OK && (pid.pid % 20 == 12) ) {
+	  try {
+	    SystemDefs.JavabaseBM.unpinPage( pid, /*dirty:*/ true , false);
+	  }
+	  catch (Exception e)  { 
+	    status = FAIL;
+	    System.err.print("*** Could not unpin page "+pid.pid+"\n");
+	    e.printStackTrace();
+	  }
+	}
+      }
+    }
+    
+    if ( status == OK )
+      System.out.print("  Test 3 completed successfully.\n");
+
+    return status;
+}
 
   /**
    * overrides the test4 function in TestDriver

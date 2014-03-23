@@ -8,9 +8,8 @@ import bufmgr.pageDsc;
 public class FIFO extends Policy {
 
 	protected FIFO() {
-		countZero = new LinkedList<pageDsc>();
+		super();
 
-		requested = new LinkedList<pageDsc>();
 }
 
 	@Override
