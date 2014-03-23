@@ -4,6 +4,16 @@ import global.*;
 
 public class pageDsc {
 	protected PageId pageID;
+	protected int frameIndex;
+	
+	public int getFrameIndex() {
+		return frameIndex;
+	}
+
+	public void setFrameIndex(int frameIndex) {
+		this.frameIndex = frameIndex;
+	}
+
 	public PageId getPageID() {
 		return pageID;
 	}
@@ -39,8 +49,17 @@ public class pageDsc {
 		lovebit = l;
 	}
 
-	public pageDsc() {
-		pageID = null;
+//	public pageDsc() {
+//		pageID = null;
+//		setPin_count(0);
+//		dirtybit = false;
+//		lovebit = false;
+//		// TODO Auto-generated constructor stub
+//	}
+	
+	public pageDsc(int frameIndex) {
+		this.frameIndex = frameIndex;
+		pageID = new PageId();
 		setPin_count(0);
 		dirtybit = false;
 		lovebit = false;

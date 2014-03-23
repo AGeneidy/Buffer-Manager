@@ -50,7 +50,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     String newlogpath;
     String remove_logcmd;
     String remove_dbcmd;
-    String remove_cmd = "/bin/rm -rf ";
+    String remove_cmd = "cmd /k de";
     
     newdbpath = dbpath;
     newlogpath = logpath;
@@ -219,6 +219,12 @@ class BMDriver extends TestDriver implements GlobalConst {
     
     for (pid.pid=firstPid.pid; status==OK && pid.pid<lastPid.pid; 
 	 pid.pid = pid.pid + 1) {
+    	
+    	
+    	
+    	if(pid.pid == 50){
+    		System.out.println(32);
+    	}
       
       try {
 	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ false,false);
@@ -292,173 +298,173 @@ class BMDriver extends TestDriver implements GlobalConst {
    *
    * @return whether test2 has passed
    */
-//  protected boolean test2 () {
-//    
-//    System.out.print("\n  Test 2 exercises some illegal buffer " +
-//		     "manager operations:\n");
-//    
-//    // We choose this number to ensure that pinning this number of buffers
-//    // should fail.
-//    int numPages = SystemDefs.JavabaseBM.getNumUnpinnedBuffers() + 1;
-//    Page pg = new Page ();
-//    PageId pid, lastPid;
-//    PageId firstPid = new PageId();
-//    boolean status = OK;
-//    
-//    System.out.print("  - Try to pin more pages than there are frames\n");
-//    try {
-//      firstPid = SystemDefs.JavabaseBM.newPage( pg, numPages );
-//    }
-//    catch (Exception e) {   
-//      System.err.print("*** Could not allocate " + numPages);
-//      System.err.print (" new pages in the database.\n");
-//      e.printStackTrace();
-//      return false;
-//    }
-//    
-//    pid = new PageId();
-//    lastPid = new PageId();
-//    
-//    // First pin enough pages that there is no more room.
-//    for ( pid.pid=firstPid.pid+1, lastPid.pid=firstPid.pid+numPages-1;
-//          status == OK && pid.pid < lastPid.pid; 
-//	  pid.pid = pid.pid + 1 ) {
-//      
-//      try {
-//        SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true,false);
-//      }
-//      catch (Exception e) { 
-//	status = FAIL;
-//	System.err.print("*** Could not pin new page "+pid.pid+"\n");
-//	e.printStackTrace();
-//      }
-//    }
-//    
-//    // Make sure the buffer manager thinks there's no more room.
-//    if ( status == OK  &&  SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != 0 ) {
-//      status = FAIL;
-//      System.err.print ("*** The buffer manager thinks it has " +
-//			SystemDefs.JavabaseBM.getNumUnpinnedBuffers() 
-//			+ " available frames,\n" +
-//			"    but it should have none.\n");
-//    }
-//    
-//    // Now pin that last page, and make sure it fails.
-//    if ( status == OK ) {
-//      try {
-//	SystemDefs.JavabaseBM.pinPage( lastPid, pg, /*emptyPage:*/ true,false);
-//      }
-//      catch (ChainException e) { 
-//	status = checkException (e, "bufmgr.BufferPoolExceededException");
-//	if (status == FAIL) {
-//	  System.err.print("*** Pinning too many pages\n");
-//	  System.out.println ("  --> Failed as expected \n");
-//	}
-//      }
-//      catch (Exception e) {e.printStackTrace();}
-//      
-//      if (status == OK) {
-//	status = FAIL;
-//	System.err.print ("The expected exception was not thrown\n");
-//      }
-//      else {
-//	status = OK;
-//      }
-//    }
-//    
-//    if ( status == OK ) {
-//      try {
-//	SystemDefs.JavabaseBM.pinPage( firstPid, pg, /*emptyPage:*/ true,false);
-//      }
-//      catch (Exception e) {
-//	status = FAIL;
-//	System.err.print("*** Could not acquire a second pin on a page\n");
-//	e.printStackTrace();
-//      }
-//      
-//      if ( status == OK ) {
-//	System.out.print ("  - Try to free a doubly-pinned page\n");
-//	try {
-//	  SystemDefs.JavabaseBM.freePage( firstPid );
-//	}
-//
-//	catch (ChainException e) {
-//	  status = checkException (e, "bufmgr.PagePinnedException");
-//
-//	  if (status == FAIL) {
-//	    System.err.print("*** Freeing a pinned page\n");
-//	    System.out.println ("  --> Failed as expected \n");
-//	  }
-//	}
-//
-//	catch (Exception e) {
-//	  e.printStackTrace();
-//	}
-//
-//	if (status == OK) {
-//	  status = FAIL;
-//	  System.err.print ("The expected exception was not thrown\n");
-//	}
-//	else {
-//	  status = OK;
-//	}
-//      }
-//      
-//      if (status == OK) {
-//	try {
-//	  SystemDefs.JavabaseBM.unpinPage( firstPid, false , false);
-//	}
-//	catch (Exception e) {
-//	  status = FAIL;
-//	  e.printStackTrace();
-//	}
-//      }
-//    }
-//    
-//    if ( status == OK ) {
-//      System.out.print ("  - Try to unpin a page not in the buffer pool\n");
-//      try {
-//	SystemDefs.JavabaseBM.unpinPage( lastPid, false, false );
-//      }
-//      catch (ChainException e) { 
-//	status = checkException (e, "bufmgr.HashEntryNotFoundException");
-//
-//	if (status == FAIL) {
-//	  System.err.print("*** Unpinning a page not in the buffer pool\n"); 
-//	  System.out.println ("  --> Failed as expected \n");
-//	}
-//      }
-//      catch (Exception e) {
-//	e.printStackTrace();
-//      }
-//      
-//      if (status == OK) {
-//	status = FAIL;
-//	System.err.print ("The expected exception was not thrown\n");
-//      }
-//      else {
-//	status = OK;
-//      }
-//    }
-//    
-//    for ( pid.pid = firstPid.pid; pid.pid <= lastPid.pid; 
-//	  pid.pid = pid.pid + 1 ) {
-//      try {
-//	SystemDefs.JavabaseBM.freePage( pid );
-//      }
-//      catch (Exception e) { 
-//	status = FAIL;
-//	System.err.print ("*** Error freeing page " + pid.pid + "\n");
-//	e.printStackTrace();
-//      }
-//    }
-//    
-//    if ( status == OK )
-//      System.out.print ("  Test 2 completed successfully.\n");
-//    
-//    return status;
-//  }
-//  
+  protected boolean test2 () {
+    
+    System.out.print("\n  Test 2 exercises some illegal buffer " +
+		     "manager operations:\n");
+    
+    // We choose this number to ensure that pinning this number of buffers
+    // should fail.
+    int numPages = SystemDefs.JavabaseBM.getNumUnpinnedBuffers() + 1;
+    Page pg = new Page ();
+    PageId pid, lastPid;
+    PageId firstPid = new PageId();
+    boolean status = OK;
+    
+    System.out.print("  - Try to pin more pages than there are frames\n");
+    try {
+      firstPid = SystemDefs.JavabaseBM.newPage( pg, numPages );
+    }
+    catch (Exception e) {   
+      System.err.print("*** Could not allocate " + numPages);
+      System.err.print (" new pages in the database.\n");
+      e.printStackTrace();
+      return false;
+    }
+    
+    pid = new PageId();
+    lastPid = new PageId();
+    
+    // First pin enough pages that there is no more room.
+    for ( pid.pid=firstPid.pid+1, lastPid.pid=firstPid.pid+numPages-1;
+          status == OK && pid.pid < lastPid.pid; 
+	  pid.pid = pid.pid + 1 ) {
+      
+      try {
+        SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ true,false);
+      }
+      catch (Exception e) { 
+	status = FAIL;
+	System.err.print("*** Could not pin new page "+pid.pid+"\n");
+	e.printStackTrace();
+      }
+    }
+    
+    // Make sure the buffer manager thinks there's no more room.
+    if ( status == OK  &&  SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != 0 ) {
+      status = FAIL;
+      System.err.print ("*** The buffer manager thinks it has " +
+			SystemDefs.JavabaseBM.getNumUnpinnedBuffers() 
+			+ " available frames,\n" +
+			"    but it should have none.\n");
+    }
+    
+    // Now pin that last page, and make sure it fails.
+    if ( status == OK ) {
+      try {
+	SystemDefs.JavabaseBM.pinPage( lastPid, pg, /*emptyPage:*/ true,false);
+      }
+      catch (ChainException e) { 
+	status = checkException (e, "bufmgr.BufferPoolExceededException");
+	if (status == FAIL) {
+	  System.err.print("*** Pinning too many pages\n");
+	  System.out.println ("  --> Failed as expected \n");
+	}
+      }
+      catch (Exception e) {e.printStackTrace();}
+      
+      if (status == OK) {
+	status = FAIL;
+	System.err.print ("The expected exception was not thrown\n");
+      }
+      else {
+	status = OK;
+      }
+    }
+    
+    if ( status == OK ) {
+      try {
+	SystemDefs.JavabaseBM.pinPage( firstPid, pg, /*emptyPage:*/ true,false);
+      }
+      catch (Exception e) {
+	status = FAIL;
+	System.err.print("*** Could not acquire a second pin on a page\n");
+	e.printStackTrace();
+      }
+      
+      if ( status == OK ) {
+	System.out.print ("  - Try to free a doubly-pinned page\n");
+	try {
+	  SystemDefs.JavabaseBM.freePage( firstPid );
+	}
+
+	catch (ChainException e) {
+	  status = checkException (e, "bufmgr.PagePinnedException");
+
+	  if (status == FAIL) {
+	    System.err.print("*** Freeing a pinned page\n");
+	    System.out.println ("  --> Failed as expected \n");
+	  }
+	}
+
+	catch (Exception e) {
+	  e.printStackTrace();
+	}
+
+	if (status == OK) {
+	  status = FAIL;
+	  System.err.print ("The expected exception was not thrown\n");
+	}
+	else {
+	  status = OK;
+	}
+      }
+      
+      if (status == OK) {
+	try {
+	  SystemDefs.JavabaseBM.unpinPage( firstPid, false , false);
+	}
+	catch (Exception e) {
+	  status = FAIL;
+	  e.printStackTrace();
+	}
+      }
+    }
+    
+    if ( status == OK ) {
+      System.out.print ("  - Try to unpin a page not in the buffer pool\n");
+      try {
+	SystemDefs.JavabaseBM.unpinPage( lastPid, false, false );
+      }
+      catch (ChainException e) { 
+	status = checkException (e, "bufmgr.HashEntryNotFoundException");
+
+	if (status == FAIL) {
+	  System.err.print("*** Unpinning a page not in the buffer pool\n"); 
+	  System.out.println ("  --> Failed as expected \n");
+	}
+      }
+      catch (Exception e) {
+	e.printStackTrace();
+      }
+      
+      if (status == OK) {
+	status = FAIL;
+	System.err.print ("The expected exception was not thrown\n");
+      }
+      else {
+	status = OK;
+      }
+    }
+    
+    for ( pid.pid = firstPid.pid; pid.pid <= lastPid.pid; 
+	  pid.pid = pid.pid + 1 ) {
+      try {
+	SystemDefs.JavabaseBM.freePage( pid );
+      }
+      catch (Exception e) { 
+	status = FAIL;
+	System.err.print ("*** Error freeing page " + pid.pid + "\n");
+	e.printStackTrace();
+      }
+    }
+    
+    if ( status == OK )
+      System.out.print ("  Test 2 completed successfully.\n");
+    
+    return status;
+  }
+  
   
   /**
    * overrides the test3 function in TestDriver.  It exercises some of the internal
