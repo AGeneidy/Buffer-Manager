@@ -20,27 +20,28 @@ public class Policy {
 		MAX = -1;
 	}
 
-	public static Policy getInstance(String u, int max) {
+	public static Policy getInstance(String u) {
 		if (instance != null) {
 			if (!policy.equals(u))// moshkela
 				return null;
 			return instance;
 		} else {
+			u=u.toUpperCase();
 			switch (u) {
 			case "FIFO":
-				System.out.println(1);
+				System.out.println("FIFO");
 				return (instance = new FIFO());
 			case "LRU":
-				System.out.println(2);
+				System.out.println("LRU");
 				return (instance = new LRU());
 			case "MRU":
-				System.out.println(3);
-				return (instance = new MRU(max));
-			case "love/hate":
-				System.out.println(4);
+				System.out.println("MRU");
+				return (instance = new MRU());
+			case "LOVE":
+				System.out.println("LOVE");
 				return (instance = new LOVE());
 			default:
-				System.out.println(5);
+				System.out.println("Default");
 				return (instance = new FIFO());
 			}
 		}

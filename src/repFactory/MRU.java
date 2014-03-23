@@ -7,10 +7,9 @@ import bufmgr.pageDsc;
 
 public class MRU extends Policy {
 
-	protected MRU(int max) {
+	protected MRU() {
 		// TODO Auto-generated constructor stub
 		super();
-		MAX = max;
 	}
 
 	@Override

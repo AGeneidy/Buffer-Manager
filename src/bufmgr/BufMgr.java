@@ -16,7 +16,7 @@ public class BufMgr {
 	private byte[][] bufPool;
 	private Page[] pages;
 	private Hashtable<Integer, Integer> google;
-	static int  MAX;
+	static int MAX;
 	static Policy rep;
 
 	/**
@@ -33,10 +33,10 @@ public class BufMgr {
 		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
 		bufDescr = new pageDsc[numBufs];
 		google = new Hashtable<Integer, Integer>();
-		rep = Policy.getInstance(replaceArg,numBufs);
+		rep = Policy.getInstance(replaceArg);
 		MAX = numBufs;
 		pages = new Page[numBufs];
-		for (int i = 0; i < numBufs; i++){
+		for (int i = 0; i < numBufs; i++) {
 			pages[i] = new Page(bufPool[i]);
 			bufDescr[i] = new pageDsc(i);
 			rep.addToCountZero(bufDescr[i]);
@@ -61,30 +61,32 @@ public class BufMgr {
 	 *            the pointer point to the page.
 	 * @param emptyPage
 	 *            true (empty page), false (nonempty page).
-	 * @throws BufferPoolExceededException 
+	 * @throws BufferPoolExceededException
 	 */
-	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) throws BufferPoolExceededException {
+	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved)
+			throws BufferPoolExceededException {
 		if (!google.containsKey(pgid.pid)) { // not in RAM
 			int rowIndex = 0;
 			if (rep.isEmpty()) { // Policy can not be accessed
 				throw new BufferPoolExceededException(null, "");
 			}
-			
+
 			rowIndex = rep.getFrame().getFrameIndex();
 			if (bufDescr[rowIndex].dirtybit)
 				flushPage(bufDescr[rowIndex].pageID); // save in Disk
-			
+
 			rep.removeFromCountZero(bufDescr[rowIndex]);
 			google.remove(bufDescr[rowIndex].pageID.pid); // remove from RAM
 
 			try {
 				Page tmp = new Page();
 				SystemDefs.JavabaseDB.read_page(pgid, tmp); // Read from Disk
-				pages[rowIndex]= tmp;
+				pages[rowIndex] = tmp;
 				bufPool[rowIndex] = tmp.getpage(); // Put the page in the
 				page.setpage(tmp.getpage()); // selected place
 				google.put(pgid.pid, rowIndex);
-				bufDescr[rowIndex].update(new PageId(pgid.pid), 1, false, loved);
+				bufDescr[rowIndex]
+						.update(new PageId(pgid.pid), 1, false, loved);
 
 				rep.addToRequested(bufDescr[rowIndex]); // add in LRU/MRU
 
@@ -116,7 +118,7 @@ public class BufMgr {
 	 * @param dirty
 	 *            the dirty bit of the frame.
 	 * @throws PageUnpinnedExcpetion
-	 * @throws HashEntryNotFoundException 
+	 * @throws HashEntryNotFoundException
 	 * @throws InvalidPageNumberException
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
@@ -125,15 +127,16 @@ public class BufMgr {
 		if (google.containsKey(pgid.pid)) {
 			int rowPlace = google.get(pgid.pid);
 			if (bufDescr[rowPlace].getPin_count() == 0)// throws exception
-				throw new PageUnpinnedExcpetion(null , "");
+				throw new PageUnpinnedExcpetion(null, "");
 
 			bufDescr[rowPlace].decrement();
 			bufDescr[rowPlace].dirtybit = dirty;
-			bufDescr[rowPlace].lovebit = loved;
-			
+			if (!bufDescr[rowPlace].lovebit)
+				bufDescr[rowPlace].lovebit = loved;
+
 			rep.addToCountZero(bufDescr[rowPlace]);
 		} else {
-			 throw new HashEntryNotFoundException(null, "");
+			throw new HashEntryNotFoundException(null, "");
 		}
 	}
 
@@ -150,12 +153,14 @@ public class BufMgr {
 	 *            total number of allocated new pages.
 	 * 
 	 * @return the first page id of the new pages. null, if error.
-	 * @throws BufferPoolExceededException 
+	 * @throws BufferPoolExceededException
 	 */
-	public PageId newPage(Page firstPage, int howmany) throws BufferPoolExceededException {
-		
-		if(rep.isEmpty()) return null;
-		
+	public PageId newPage(Page firstPage, int howmany)
+			throws BufferPoolExceededException {
+
+		if (rep.isEmpty())
+			return null;
+
 		PageId temp = new PageId();
 
 		try {
@@ -166,7 +171,7 @@ public class BufMgr {
 				| DiskMgrException | IOException e2) {
 			e2.printStackTrace();
 		}
-		
+
 		pinPage(temp, firstPage, false, false);
 		return temp;
 	}
@@ -177,16 +182,19 @@ public class BufMgr {
 	 * 
 	 * @param pgid
 	 *            the page number in the database.
-	 * @throws HashEntryNotFoundException 
-	 * @throws PageUnpinnedExcpetion 
+	 * @throws HashEntryNotFoundException
+	 * @throws PageUnpinnedExcpetion
 	 */
-	public void freePage(PageId pgid) throws  PagePinnedException, PageUnpinnedExcpetion, HashEntryNotFoundException{
-		if(!google.containsKey(pgid.pid))return;
-		if(bufDescr[google.get(pgid.pid)].getPin_count()>=2)throw new PagePinnedException(null, "");
+	public void freePage(PageId pgid) throws PagePinnedException,
+			PageUnpinnedExcpetion, HashEntryNotFoundException {
+		if (!google.containsKey(pgid.pid))
+			return;
+		if (bufDescr[google.get(pgid.pid)].getPin_count() >= 2)
+			throw new PagePinnedException(null, "");
 		try {
-			if(bufDescr[google.get(pgid.pid)].getPin_count()==1)
-			unpinPage(pgid, false, false);
-			
+			if (bufDescr[google.get(pgid.pid)].getPin_count() == 1)
+				unpinPage(pgid, false, false);
+
 			SystemDefs.JavabaseDB.deallocate_page(pgid);
 		} catch (InvalidRunSizeException | InvalidPageNumberException
 				| FileIOException | DiskMgrException | IOException e) {
@@ -202,9 +210,9 @@ public class BufMgr {
 	 *            the page number in the database.
 	 */
 	public void flushPage(PageId pgid) {
-		
+
 		if (!google.containsKey(pgid.pid)) {
-			return ;
+			return;
 		}
 		try {
 			SystemDefs.JavabaseDB.write_page(pgid,
@@ -215,7 +223,7 @@ public class BufMgr {
 	}
 
 	public void flushAllPages() {
-		for (int i = 0; i < MAX; i++){
+		for (int i = 0; i < MAX; i++) {
 			if (bufDescr[i].dirtybit)
 				flushPage(bufDescr[i].pageID);
 		}
