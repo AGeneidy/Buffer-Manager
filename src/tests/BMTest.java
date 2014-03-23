@@ -50,7 +50,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     String newlogpath;
     String remove_logcmd;
     String remove_dbcmd;
-    String remove_cmd = "cmd /k de";
+    String remove_cmd = "cmd /k del";
     
     newdbpath = dbpath;
     newlogpath = logpath;
@@ -219,12 +219,6 @@ class BMDriver extends TestDriver implements GlobalConst {
     
     for (pid.pid=firstPid.pid; status==OK && pid.pid<lastPid.pid; 
 	 pid.pid = pid.pid + 1) {
-    	
-    	
-    	
-    	if(pid.pid == 50){
-    		System.out.println(32);
-    	}
       
       try {
 	SystemDefs.JavabaseBM.pinPage( pid, pg, /*emptyPage:*/ false,false);
