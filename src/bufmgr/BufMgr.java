@@ -183,7 +183,7 @@ public class BufMgr {
 
 		try {
 			SystemDefs.JavabaseDB.allocate_page(temp, howmany);
-			SystemDefs.JavabaseDB.read_page(temp, page);
+			//SystemDefs.JavabaseDB.read_page(temp, page);
 
 		} catch (OutOfSpaceException | InvalidRunSizeException
 				| InvalidPageNumberException | FileIOException
@@ -192,7 +192,7 @@ public class BufMgr {
 			e2.printStackTrace();
 		}
 		
-		pinPage(temp, page, false, false);
+		pinPage(temp, firstPage, false, false);
 		return temp;
 //		PageId[] b = new PageId[howmany];
 //		for (int i = 0; i < howmany; i++)
