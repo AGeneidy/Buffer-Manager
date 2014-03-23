@@ -1,16 +1,16 @@
 package repFactory;
 
 import java.util.LinkedList;
-import java.util.Queue;
 
 import bufmgr.pageDsc;
 
 public class LRU extends Policy {
-	static Queue<pageDsc> LRU;
 
 	protected LRU() {
 		// TODO Auto-generated constructor stub
-		LRU = new LinkedList<pageDsc>();
+		countZero = new LinkedList<pageDsc>();
+
+		requested = new LinkedList<pageDsc>();	
 	}
 
 	@Override
@@ -31,9 +31,6 @@ public class LRU extends Policy {
 		return null;
 	}
 
-	@Override
-	public void update(pageDsc pageDsc) {
-	}
 
 
 }

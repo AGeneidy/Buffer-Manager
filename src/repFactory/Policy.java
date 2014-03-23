@@ -66,7 +66,7 @@ public class Policy {
 		countZero.remove(pageDsc);
 	}
 	
-	public void removeFromRequested(pageDsc pageDsc) {
-		requested.remove(pageDsc);
-	}
+//	public void removeFromRequested(pageDsc pageDsc) {
+//		requested.remove(pageDsc);
+//	}
 }

@@ -12,13 +12,11 @@ import repFactory.*;
 import global.*;
 
 public class BufMgr {
-	// kol row hwa page
-	// 3dd el rows numbufs
 	private pageDsc[] bufDescr;// numbufs // page size
 	private byte[][] bufPool;
 	private Page[] pages;
 	private Hashtable<Integer, Integer> google;
-	static int num, MAX;
+	static int  MAX;
 	static Policy rep;
 
 	/**
@@ -42,8 +40,8 @@ public class BufMgr {
 			pages[i] = new Page(bufPool[i]);
 			bufDescr[i] = new pageDsc(i);
 			rep.addToCountZero(bufDescr[i]);
+			rep.addToRequested(bufDescr[i]);
 		}
-		num = 0;
 	}
 
 	/**
@@ -66,34 +64,20 @@ public class BufMgr {
 	 * @throws BufferPoolExceededException 
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) throws BufferPoolExceededException {
-		System.out.println("in pinpage"+pgid.pid);
+		System.out.println("Pin "+ pgid.pid);
 		if (!google.containsKey(pgid.pid)) { // not in RAM
-		// System.out.println("a77a");
 			int rowIndex = 0;
-//			if (num >= MAX) { // RAM is Full
 
-				if (rep.isEmpty()) { // Policy can not be accessed
-					// System.out.println("EMPTY FIFO");
-					throw new BufferPoolExceededException(null, "");
-				}
-
-//				PageId pageIdToBeRemoved = rep.getFrame().pageID;
-//				rowIndex = google.get(pageIdToBeRemoved.pid);
-				
-				rowIndex = rep.getFrame().getFrameIndex();
-				if(rowIndex == 0)System.out.println("ay 7aga");
-				if (bufDescr[rowIndex].dirtybit)
-					flushPage(bufDescr[rowIndex].pageID); // save in Disk
-
-				rep.removeFromCountZero(bufDescr[rowIndex]);
-				rep.removeFromRequested(bufDescr[rowIndex]);
-				if(google.containsKey(bufDescr[rowIndex].pageID.pid))
-					google.remove(bufDescr[rowIndex].pageID.pid); // remove from RAM
-
-//			} else { // RAM has empty place
-//				rowIndex = num;
-//				num++;
-//			}
+			if (rep.isEmpty()) { // Policy can not be accessed
+				throw new BufferPoolExceededException(null, "");
+			}
+			
+			rowIndex = rep.getFrame().getFrameIndex();
+			if (bufDescr[rowIndex].dirtybit)
+				flushPage(bufDescr[rowIndex].pageID); // save in Disk
+			
+			rep.removeFromCountZero(bufDescr[rowIndex]);
+			google.remove(bufDescr[rowIndex].pageID.pid); // remove from RAM
 
 			try {
 				Page tmp = new Page();
@@ -104,8 +88,7 @@ public class BufMgr {
 				google.put(pgid.pid, rowIndex);
 				bufDescr[rowIndex].update(new PageId(pgid.pid), 1, false, loved);
 
-				rep.addToRequested(bufDescr[rowIndex]); // add in queue FIFO
-														// ONLY
+				rep.addToRequested(bufDescr[rowIndex]); // add in LRU/MRU
 
 			} catch (InvalidPageNumberException | FileIOException | IOException e) {
 				// TODO Auto-generated catch block
@@ -120,8 +103,6 @@ public class BufMgr {
 			rep.removeFromCountZero(bufDescr[reqPgRow]);
 
 		}
-//		System.out.println(pgid + "   " + google.get(pgid.pid) + "    "
-//				+ bufPool[google.get(pgid.pid)].toString());
 	}
 
 	/**
@@ -142,7 +123,8 @@ public class BufMgr {
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
 			throws PageUnpinnedExcpetion, HashEntryNotFoundException {
-		System.out.println("in unpinpage"+pgid.pid);
+
+		System.out.println("Unpin "+ pgid.pid);
 
 		if (google.containsKey(pgid.pid)) {
 			int rowPlace = google.get(pgid.pid);
@@ -179,47 +161,18 @@ public class BufMgr {
 		if(rep.isEmpty()) return null;
 		
 		PageId temp = new PageId();
-		Page page = new Page();
 
 		try {
 			SystemDefs.JavabaseDB.allocate_page(temp, howmany);
-			//SystemDefs.JavabaseDB.read_page(temp, page);
 
 		} catch (OutOfSpaceException | InvalidRunSizeException
 				| InvalidPageNumberException | FileIOException
 				| DiskMgrException | IOException e2) {
-			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
 		
 		pinPage(temp, firstPage, false, false);
 		return temp;
-//		PageId[] b = new PageId[howmany];
-//		for (int i = 0; i < howmany; i++)
-//			b[i] = new PageId();
-//		int i = 0;
-//		try {
-//			for (; i < howmany; i++) {
-//				SystemDefs.JavabaseDB.allocate_page(b[i]);
-//			}
-//			pinPage(b[0], firstPage, false, false);
-//			return b[0];
-//		} catch (OutOfSpaceException | InvalidRunSizeException
-//				| InvalidPageNumberException | FileIOException
-//				| DiskMgrException | IOException e) {
-//			// TODO Auto-generated catch block
-//			for (int j = 0; j < i; j++)
-//				try {
-//					SystemDefs.JavabaseDB.deallocate_page(b[j]);
-//				} catch (InvalidRunSizeException | InvalidPageNumberException
-//						| FileIOException | DiskMgrException | IOException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
-//			e.printStackTrace();
-//			return null;
-//		}
-
 	}
 
 	/**
@@ -241,7 +194,6 @@ public class BufMgr {
 			SystemDefs.JavabaseDB.deallocate_page(pgid);
 		} catch (InvalidRunSizeException | InvalidPageNumberException
 				| FileIOException | DiskMgrException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -262,27 +214,21 @@ public class BufMgr {
 			SystemDefs.JavabaseDB.write_page(pgid,
 					new Page(bufPool[google.get(pgid.pid)]));
 		} catch (InvalidPageNumberException | FileIOException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public void flushAllPages() {
-		// TODO Auto-generated method stub
-		for (int u = 0; u < MAX; u++){
-			if (bufDescr[u].dirtybit)
-				flushPage(bufDescr[u].pageID);
-		
-			
+		for (int i = 0; i < MAX; i++){
+			if (bufDescr[i].dirtybit)
+				flushPage(bufDescr[i].pageID);
 		}
-
 	}
 
 	public int getNumUnpinnedBuffers() {
-		// TODO Auto-generated method stub
 		int i = 0;
-		for (int u = 0; u < MAX; u++)
-			if (bufDescr[u].getPin_count() == 0)
+		for (int y = 0; y < MAX; y++)
+			if (bufDescr[y].getPin_count() == 0)
 				i++;
 		return i;
 	}
