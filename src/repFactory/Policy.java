@@ -28,14 +28,19 @@ public class Policy {
 		} else {
 			switch (u) {
 			case "FIFO":
+				System.out.println(1);
 				return (instance = new FIFO());
 			case "LRU":
+				System.out.println(2);
 				return (instance = new LRU());
 			case "MRU":
+				System.out.println(3);
 				return (instance = new MRU(max));
 			case "love/hate":
+				System.out.println(4);
 				return (instance = new LOVE());
 			default:
+				System.out.println(5);
 				return (instance = new FIFO());
 			}
 		}

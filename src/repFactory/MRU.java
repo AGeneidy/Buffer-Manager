@@ -23,19 +23,17 @@ public class MRU extends Policy {
 	}
 
 	@Override
-	public pageDsc getFrame() {
+	 public pageDsc getFrame() {
+		for (int i = 0; i < requested.size(); i++) {
+			if (requested.get(i).getPin_count() == 0  && requested.get(i).getPageID().pid == -1)
+				return requested.get(i);
+		}
 		pageDsc a = null;
 		for (int i = 0; i < requested.size(); i++) {
-			if (requested.get(i).getPin_count() == 0
-					&& requested.get(i).getPageID().pid == -1)
+			if (requested.get(i).getPin_count() == 0)
 				a = requested.get(i);
 		}
-		if (a == null)
-			for (int i = 0; i < requested.size(); i++) {
-				if (requested.get(i).getPin_count() == 0)
-					a = requested.get(i);
-			}
 		// System.out.println(a.getPageID().pid);
 		return a;
-	}
+	 }
 }

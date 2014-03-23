@@ -64,10 +64,8 @@ public class BufMgr {
 	 * @throws BufferPoolExceededException 
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved) throws BufferPoolExceededException {
-		System.out.println("Pin "+ pgid.pid);
 		if (!google.containsKey(pgid.pid)) { // not in RAM
 			int rowIndex = 0;
-//			System.out.println(rep.size());
 			if (rep.isEmpty()) { // Policy can not be accessed
 				throw new BufferPoolExceededException(null, "");
 			}
@@ -123,8 +121,6 @@ public class BufMgr {
 	 */
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
 			throws PageUnpinnedExcpetion, HashEntryNotFoundException {
-
-		System.out.println("Unpin "+ pgid.pid);
 
 		if (google.containsKey(pgid.pid)) {
 			int rowPlace = google.get(pgid.pid);
