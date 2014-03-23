@@ -8,24 +8,20 @@ import bufmgr.pageDsc;
 public class FIFO extends Policy {
 
 	protected FIFO() {
-		requested = new LinkedList<pageDsc>();
-		added = new LinkedList<pageDsc>();
+		countZero = new LinkedList<pageDsc>();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		for(int i = 0; i<added.size(); i++){
-			if(added.get(i).getPin_count() == 0 )
-				return false;
-		}
-		return true;
+		if(countZero.size() == 0)
+			return true;
+		return false;
 	}
 	
 	@Override
 	public pageDsc getFrame() {
-		for(int i = 0; i<added.size(); i++){
-			if(added.get(i).getPin_count() == 0 )
-				return added.get(i);
+		if(countZero.size()!=0){
+			return countZero.getFirst();
 		}
 		return null;
 	}

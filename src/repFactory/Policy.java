@@ -10,7 +10,7 @@ public class Policy {
 	static Policy instance;
 	static String policy;
 	protected LinkedList<pageDsc> requested;
-	protected LinkedList<pageDsc> added;
+	protected LinkedList<pageDsc> countZero;
 
 	protected Policy() {
 		// TODO Auto-generated constructor stub
@@ -47,12 +47,9 @@ public class Policy {
 	public void update(pageDsc pageDsc) {
 	}
 	
-	public void addToAdded(pageDsc pageDsc) {
-		if(!added.contains(pageDsc)){
-			added.addLast(pageDsc);
-		}else{
-			added.remove(pageDsc);
-			added.addLast(pageDsc);
+	public void addToCountZero(pageDsc pageDsc) {
+		if(pageDsc.getPin_count() == 0){
+			countZero.addLast(pageDsc);
 		}
 	}
 	
@@ -65,8 +62,8 @@ public class Policy {
 		}
 	}
 	
-	public void removeFromAdded(pageDsc pageDsc) {
-		added.remove(pageDsc);
+	public void removeFromCountZero(pageDsc pageDsc) {
+		countZero.remove(pageDsc);
 	}
 	
 	public void removeFromRequested(pageDsc pageDsc) {

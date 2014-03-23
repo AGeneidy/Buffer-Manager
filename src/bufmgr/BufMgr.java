@@ -79,8 +79,9 @@ public class BufMgr {
 				if (bufDescr[rowIndex].dirtybit)
 					flushPage(pageIdToBeRemoved); // save in Disk
 
-				rep.removeFromAdded(bufDescr[rowIndex]);
+				rep.removeFromCountZero(bufDescr[rowIndex]);
 				rep.removeFromRequested(bufDescr[rowIndex]);
+				
 				google.remove(pageIdToBeRemoved.pid); // remove from RAM
 
 			} else { // RAM has empty place
@@ -93,11 +94,10 @@ public class BufMgr {
 				SystemDefs.JavabaseDB.read_page(pgid, tmp); // Read from Disk
 				pages[rowIndex]= tmp;
 				bufPool[rowIndex] = tmp.getpage(); // Put the page in the
-				 page.setpage(tmp.getpage()); // selected place
+				page.setpage(tmp.getpage()); // selected place
 				google.put(pgid.pid, rowIndex);
 				bufDescr[rowIndex].update(pgid, 1, false, loved);
 
-				rep.addToAdded(bufDescr[rowIndex]); // add in queue FIFO ONLY
 				rep.addToRequested(bufDescr[rowIndex]); // add in queue FIFO
 														// ONLY
 
@@ -142,9 +142,8 @@ public class BufMgr {
 			bufDescr[rowPlace].decrement();
 			bufDescr[rowPlace].dirtybit = dirty;
 			bufDescr[rowPlace].lovebit = loved;
-			// FIFO >> no action
-			// LRU >> add if count == 0
-
+			
+			rep.addToCountZero(bufDescr[rowPlace]);
 		} else {
 			// throw new PageUnpinnedExcpetion();
 		}
