@@ -15,7 +15,7 @@ public class BufMgr {
 	private pageDsc[] bufDescr;// numbufs // page size
 	private byte[][] bufPool;
 	private Page[] pages;
-	private Hashtable<Integer, Integer> google;
+	private Hashtable<Integer, Integer> map;
 	static int MAX;
 	static Policy rep;
 
@@ -32,7 +32,7 @@ public class BufMgr {
 	public BufMgr(int numBufs, String replaceArg) {
 		bufPool = new byte[numBufs][global.GlobalConst.MINIBASE_PAGESIZE];
 		bufDescr = new pageDsc[numBufs];
-		google = new Hashtable<Integer, Integer>();
+		map = new Hashtable<Integer, Integer>();
 		rep = Policy.getInstance(replaceArg);
 		MAX = numBufs;
 		pages = new Page[numBufs];
@@ -65,7 +65,7 @@ public class BufMgr {
 	 */
 	public void pinPage(PageId pgid, Page page, boolean emptyPage, boolean loved)
 			throws BufferPoolExceededException {
-		if (!google.containsKey(pgid.pid)) { // not in RAM
+		if (!map.containsKey(pgid.pid)) { // not in RAM
 			int rowIndex = 0;
 			if (rep.isEmpty()) { // Policy can not be accessed
 				throw new BufferPoolExceededException(null, "");
@@ -76,7 +76,7 @@ public class BufMgr {
 				flushPage(bufDescr[rowIndex].pageID); // save in Disk
 
 			rep.removeFromCountZero(bufDescr[rowIndex]);
-			google.remove(bufDescr[rowIndex].pageID.pid); // remove from RAM
+			map.remove(bufDescr[rowIndex].pageID.pid); // remove from RAM
 
 			try {
 				Page tmp = new Page();
@@ -84,7 +84,7 @@ public class BufMgr {
 				pages[rowIndex] = tmp;
 				bufPool[rowIndex] = tmp.getpage(); // Put the page in the
 				page.setpage(tmp.getpage()); // selected place
-				google.put(pgid.pid, rowIndex);
+				map.put(pgid.pid, rowIndex);
 				bufDescr[rowIndex]
 						.update(new PageId(pgid.pid), 1, false, loved);
 
@@ -96,7 +96,7 @@ public class BufMgr {
 			}
 
 		} else { // in RAM
-			int reqPgRow = google.get(pgid.pid);
+			int reqPgRow = map.get(pgid.pid);
 			page.setpage(bufPool[reqPgRow]);
 			bufDescr[reqPgRow].increment();
 			rep.addToRequested(bufDescr[reqPgRow]);
@@ -124,15 +124,14 @@ public class BufMgr {
 	public void unpinPage(PageId pgid, boolean dirty, boolean loved)
 			throws PageUnpinnedExcpetion, HashEntryNotFoundException {
 
-		if (google.containsKey(pgid.pid)) {
-			int rowPlace = google.get(pgid.pid);
+		if (map.containsKey(pgid.pid)) {
+			int rowPlace = map.get(pgid.pid);
 			if (bufDescr[rowPlace].getPin_count() == 0)// throws exception
 				throw new PageUnpinnedExcpetion(null, "");
 
 			bufDescr[rowPlace].decrement();
-			bufDescr[rowPlace].dirtybit = dirty;
-			if (!bufDescr[rowPlace].lovebit)
-				bufDescr[rowPlace].lovebit = loved;
+			bufDescr[rowPlace].dirtybit |= dirty;
+			bufDescr[rowPlace].lovebit |= loved;
 
 			rep.addToCountZero(bufDescr[rowPlace]);
 		} else {
@@ -187,12 +186,12 @@ public class BufMgr {
 	 */
 	public void freePage(PageId pgid) throws PagePinnedException,
 			PageUnpinnedExcpetion, HashEntryNotFoundException {
-		if (!google.containsKey(pgid.pid))
+		if (!map.containsKey(pgid.pid))
 			return;
-		if (bufDescr[google.get(pgid.pid)].getPin_count() >= 2)
+		if (bufDescr[map.get(pgid.pid)].getPin_count() >= 2)
 			throw new PagePinnedException(null, "");
 		try {
-			if (bufDescr[google.get(pgid.pid)].getPin_count() == 1)
+			if (bufDescr[map.get(pgid.pid)].getPin_count() == 1)
 				unpinPage(pgid, false, false);
 
 			SystemDefs.JavabaseDB.deallocate_page(pgid);
@@ -211,12 +210,13 @@ public class BufMgr {
 	 */
 	public void flushPage(PageId pgid) {
 
-		if (!google.containsKey(pgid.pid)) {
+		if (!map.containsKey(pgid.pid)) {
 			return;
 		}
 		try {
+			bufDescr[map.get(pgid.pid)].dirtybit = false;
 			SystemDefs.JavabaseDB.write_page(pgid,
-					new Page(bufPool[google.get(pgid.pid)]));
+					new Page(bufPool[map.get(pgid.pid)]));
 		} catch (InvalidPageNumberException | FileIOException | IOException e) {
 			e.printStackTrace();
 		}
